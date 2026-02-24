@@ -1,0 +1,35 @@
+services:
+  mysql:
+    image: mysql:5.7.44
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: finance
+    ports:
+      - "3306:3306"
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --sql-mode=STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  worker:
+    build: .
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASS: secret
+      DB_NAME: finance
+      FILE_DATACOMPET: /data/SI_DATACOMPETPARCELAS.json
+      FILE_DATAPAGTO: /data/SI_DATAPAGTO.json
+      FILE_EXTRATO: /data/SI_EXTRATO_CLIENTE_HISTORICO.json
+      BATCH_SIZE: 5000
+      LOG_LEVEL: info
+    volumes:
+      - ./data:/data:ro
+      - ./sql:/app/sql:ro
+    depends_on:
+      - mysql
+volumes:
+  mysql_data:
